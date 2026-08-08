@@ -23,3 +23,21 @@ and Google Data Studio, with automated email reports via Apps Script.
 See `carbon-email-script.js` for the automation that emails 
 each respondent their result and generates a PDF alert for 
 high-carbon submissions.
+## Environment Report Tracker
+
+A lifecycle tracking system for environment reports, built for the 
+Environmental Sustainability track (Algolympia 2026, Team Tech Rangers).
+
+### Features
+- Add environment reports (category, location, severity, description)
+- Status lifecycle: New → In Review → Action Taken → Resolved
+- Persisted status with a visible history timeline per report
+- Category filtering and keyword search
+- Sample report seeded for demo purposes
+
+### Live Demo
+[Open Environment Report Tracker](https://pranshushikhar.github.io/eco-track-carbon-log/environment-report-tracker.html)
+
+### Tech Stack
+Single-file HTML/CSS/JavaScript app using browser localStorage for 
+persistence — no backend or database required.
