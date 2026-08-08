@@ -376,6 +376,8 @@ function renderSummary() {
   const byStatus = {};
   Object.keys(STATUS_LABELS).forEach(s => byStatus[s] = 0);
   const byCategory = {};
+  const ALL_CATEGORIES = ["Water Pollution", "Air Quality", "Waste Dumping", "Deforestation", "Noise Pollution", "Other"];
+ALL_CATEGORIES.forEach(c => byCategory[c] = 0);
 
   reports.forEach(r => {
     byStatus[r.status] = (byStatus[r.status] || 0) + 1;
@@ -386,7 +388,14 @@ function renderSummary() {
   Object.entries(byCategory).forEach(([cat, count]) => {
     if (count > topCount) { topCategory = cat; topCount = count; }
   });
-
+const categoryRowsHtml = Object.entries(byCategory)
+  .sort((a, b) => b[1] - a[1])
+  .map(([cat, count]) => `
+    <div class="summary-card">
+      <div class="num">${count}</div>
+      <div class="label">${escapeHtml(cat)}</div>
+    </div>
+  `).join("");
   panel.innerHTML = `
     <div class="summary-grid">
       <div class="summary-card"><div class="num">${total}</div><div class="label">Total Reports</div></div>
@@ -395,7 +404,9 @@ function renderSummary() {
       <div class="summary-card"><div class="num">${byStatus.ActionTaken || 0}</div><div class="label">Action Taken</div></div>
       <div class="summary-card"><div class="num">${byStatus.Resolved || 0}</div><div class="label">Resolved</div></div>
     </div>
-    <div class="callout">
+<div class="summary-grid">
+  ${categoryRowsHtml}
+</div>    <div class="callout">
       🔥 Most frequent category: <strong>${escapeHtml(topCategory)}</strong> (${topCount} report${topCount === 1 ? "" : "s"})
     </div>
   `;
