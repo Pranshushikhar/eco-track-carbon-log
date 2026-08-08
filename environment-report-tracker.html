@@ -273,6 +273,13 @@
         <option value="ActionTaken">Action Taken</option>
         <option value="Resolved">Resolved</option>
       </select>
+      <select id="filter-severity" onchange="render()">
+  <option value="">All Severities</option>
+  <option>Low</option>
+  <option>Medium</option>
+  <option>High</option>
+</select>
+<button type="button" onclick="resetFilters()">Reset</button>
     </div>
     <div id="report-list"></div>
   </div>
@@ -411,13 +418,27 @@ const categoryRowsHtml = Object.entries(byCategory)
     </div>
   `;
 }
-
-function render() {
+function resetFilters() {
+  document.getElementById("search").value = "";
+  document.getElementById("filter-category").value = "";
+  document.getElementById("filter-status").value = "";
+  document.getElementById("filter-severity").value = "";
+  render();
+}
+function resetFilters() {
+  document.getElementById("search").value = "";
+  document.getElementById("filter-category").value = "";
+  document.getElementById("filter-status").value = "";
+  document.getElementById("filter-severity").value = "";
+  render();
+}function render() {
   renderSummary();
   const list = document.getElementById("report-list");
   const search = document.getElementById("search").value.toLowerCase();
   const catFilter = document.getElementById("filter-category").value;
   const statusFilter = document.getElementById("filter-status").value;
+  const severityFilter = document.getElementById("filter-severity").value;
+  const severityFilter = document.getElementById("filter-severity").value;
 
   const filtered = reports.filter(r => {
     const matchesSearch = !search ||
@@ -426,7 +447,9 @@ function render() {
       r.location.toLowerCase().includes(search);
     const matchesCategory = !catFilter || r.category === catFilter;
     const matchesStatus = !statusFilter || r.status === statusFilter;
-    return matchesSearch && matchesCategory && matchesStatus;
+    const matchesSeverity = !severityFilter || r.severity === severityFilter;
+return matchesSearch && matchesCategory && matchesStatus && matchesSeverity;
+    
   });
 
   if (filtered.length === 0) {
