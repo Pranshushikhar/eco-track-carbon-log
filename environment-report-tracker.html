@@ -182,6 +182,37 @@
     font-size: 13px;
     padding: 30px 0;
   }
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .summary-card {
+    background: #f6f9f7;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .summary-card .num {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .summary-card .label {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .callout {
+    background: #eef7f1;
+    border: 1px solid #cfe6d8;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+  .callout strong { color: var(--accent); }
 </style>
 </head>
 <body>
@@ -223,6 +254,7 @@
 
   <div class="panel">
     <h2>Environment Reports</h2>
+    <div id="summary-panel"></div>
     <div class="filters">
       <input id="search" placeholder="Search by keyword..." oninput="render()" />
       <select id="filter-category" onchange="render()">
@@ -257,7 +289,6 @@ const STATUS_LABELS = {
 function loadReports() {
   const raw = localStorage.getItem("envReports");
   if (raw) return JSON.parse(raw);
-  // seed with one sample report
   const seed = [{
     id: cryptoId(),
     title: "Plastic waste accumulation near lakeshore",
@@ -338,7 +369,40 @@ function formatTime(iso) {
   return d.toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 }
 
+function renderSummary() {
+  const panel = document.getElementById("summary-panel");
+  const total = reports.length;
+
+  const byStatus = {};
+  Object.keys(STATUS_LABELS).forEach(s => byStatus[s] = 0);
+  const byCategory = {};
+
+  reports.forEach(r => {
+    byStatus[r.status] = (byStatus[r.status] || 0) + 1;
+    byCategory[r.category] = (byCategory[r.category] || 0) + 1;
+  });
+
+  let topCategory = "—", topCount = 0;
+  Object.entries(byCategory).forEach(([cat, count]) => {
+    if (count > topCount) { topCategory = cat; topCount = count; }
+  });
+
+  panel.innerHTML = `
+    <div class="summary-grid">
+      <div class="summary-card"><div class="num">${total}</div><div class="label">Total Reports</div></div>
+      <div class="summary-card"><div class="num">${byStatus.New || 0}</div><div class="label">New</div></div>
+      <div class="summary-card"><div class="num">${byStatus.InReview || 0}</div><div class="label">In Review</div></div>
+      <div class="summary-card"><div class="num">${byStatus.ActionTaken || 0}</div><div class="label">Action Taken</div></div>
+      <div class="summary-card"><div class="num">${byStatus.Resolved || 0}</div><div class="label">Resolved</div></div>
+    </div>
+    <div class="callout">
+      🔥 Most frequent category: <strong>${escapeHtml(topCategory)}</strong> (${topCount} report${topCount === 1 ? "" : "s"})
+    </div>
+  `;
+}
+
 function render() {
+  renderSummary();
   const list = document.getElementById("report-list");
   const search = document.getElementById("search").value.toLowerCase();
   const catFilter = document.getElementById("filter-category").value;
