@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Environment Report Tracker</title>
+<style>
+  :root {
+    --bg: #f4f6f5;
+    --card: #ffffff;
+    --ink: #1f2a24;
+    --muted: #667a70;
+    --border: #dbe4de;
+    --accent: #2f7d5c;
+    --new: #6b7280;
+    --review: #b8860b;
+    --action: #1d4ed8;
+    --resolved: #15803d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    padding: 24px;
+  }
+  h1 {
+    font-size: 22px;
+    margin: 0 0 4px;
+  }
+  .subtitle {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 20px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  @media (max-width: 800px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+  .panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+  }
+  .panel h2 {
+    font-size: 15px;
+    margin: 0 0 12px;
+  }
+  label {
+    display: block;
+    font-size: 12px;
+    color: var(--muted);
+    margin: 10px 0 4px;
+  }
+  input, select, textarea {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+  }
+  textarea { resize: vertical; min-height: 60px; }
+  button {
+    margin-top: 14px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 9px 14px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  button:hover { opacity: 0.9; }
+  .filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .filters select, .filters input {
+    width: auto;
+    flex: 1;
+    min-width: 120px;
+  }
+  .report-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 12px;
+    background: #fbfcfb;
+  }
+  .report-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .report-title {
+    font-weight: 600;
+    font-size: 15px;
+  }
+  .report-meta {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 999px;
+    color: white;
+    white-space: nowrap;
+  }
+  .badge.New { background: var(--new); }
+  .badge.InReview { background: var(--review); }
+  .badge.ActionTaken { background: var(--action); }
+  .badge.Resolved { background: var(--resolved); }
+  .report-desc {
+    font-size: 13px;
+    margin: 10px 0;
+    color: #333;
+  }
+  .status-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .status-row select {
+    width: auto;
+    flex: none;
+  }
+  .timeline {
+    margin-top: 10px;
+    border-top: 1px dashed var(--border);
+    padding-top: 8px;
+  }
+  .timeline-toggle {
+    font-size: 12px;
+    color: var(--accent);
+    cursor: pointer;
+    user-select: none;
+  }
+  .timeline-list {
+    display: none;
+    margin-top: 8px;
+    padding-left: 14px;
+    border-left: 2px solid var(--border);
+  }
+  .timeline-list.open { display: block; }
+  .timeline-item {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    position: relative;
+    padding-left: 10px;
+  }
+  .timeline-item::before {
+    content: "";
+    position: absolute;
+    left: -16px;
+    top: 4px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+  .empty {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    padding: 30px 0;
+  }
+</style>
+</head>
+<body>
+
+<h1>🌱 Environment Report Tracker</h1>
+<div class="subtitle">Lifecycle tracking for environment reports — status updates, history, and filtering.</div>
+
+<div class="layout">
+  <div class="panel">
+    <h2>Add New Report</h2>
+    <label>Title</label>
+    <input id="f-title" placeholder="e.g. Illegal dumping near river" />
+
+    <label>Category</label>
+    <select id="f-category">
+      <option>Water Pollution</option>
+      <option>Air Quality</option>
+      <option>Waste Dumping</option>
+      <option>Deforestation</option>
+      <option>Noise Pollution</option>
+      <option>Other</option>
+    </select>
+
+    <label>Location</label>
+    <input id="f-location" placeholder="e.g. Sector 12, Riverside" />
+
+    <label>Severity</label>
+    <select id="f-severity">
+      <option>Low</option>
+      <option>Medium</option>
+      <option>High</option>
+    </select>
+
+    <label>Description</label>
+    <textarea id="f-desc" placeholder="Describe what was observed..."></textarea>
+
+    <button onclick="addReport()">Add Report</button>
+  </div>
+
+  <div class="panel">
+    <h2>Environment Reports</h2>
+    <div class="filters">
+      <input id="search" placeholder="Search by keyword..." oninput="render()" />
+      <select id="filter-category" onchange="render()">
+        <option value="">All Categories</option>
+        <option>Water Pollution</option>
+        <option>Air Quality</option>
+        <option>Waste Dumping</option>
+        <option>Deforestation</option>
+        <option>Noise Pollution</option>
+        <option>Other</option>
+      </select>
+      <select id="filter-status" onchange="render()">
+        <option value="">All Statuses</option>
+        <option value="New">New</option>
+        <option value="InReview">In Review</option>
+        <option value="ActionTaken">Action Taken</option>
+        <option value="Resolved">Resolved</option>
+      </select>
+    </div>
+    <div id="report-list"></div>
+  </div>
+</div>
+
+<script>
+const STATUS_LABELS = {
+  New: "New",
+  InReview: "In Review",
+  ActionTaken: "Action Taken",
+  Resolved: "Resolved"
+};
+
+function loadReports() {
+  const raw = localStorage.getItem("envReports");
+  if (raw) return JSON.parse(raw);
+  // seed with one sample report
+  const seed = [{
+    id: cryptoId(),
+    title: "Plastic waste accumulation near lakeshore",
+    category: "Waste Dumping",
+    location: "Lakeview Park, North Bank",
+    severity: "Medium",
+    description: "Large accumulation of plastic waste observed along the lakeshore, likely from nearby market runoff.",
+    status: "New",
+    history: [
+      { status: "New", time: new Date().toISOString(), note: "Report submitted." }
+    ]
+  }];
+  saveReports(seed);
+  return seed;
+}
+
+function saveReports(reports) {
+  localStorage.setItem("envReports", JSON.stringify(reports));
+}
+
+function cryptoId() {
+  return Math.random().toString(36).slice(2, 10);
+}
+
+let reports = loadReports();
+
+function addReport() {
+  const title = document.getElementById("f-title").value.trim();
+  const category = document.getElementById("f-category").value;
+  const location = document.getElementById("f-location").value.trim();
+  const severity = document.getElementById("f-severity").value;
+  const description = document.getElementById("f-desc").value.trim();
+
+  if (!title) {
+    alert("Please enter a title for the report.");
+    return;
+  }
+
+  const newReport = {
+    id: cryptoId(),
+    title, category, location, severity, description,
+    status: "New",
+    history: [
+      { status: "New", time: new Date().toISOString(), note: "Report submitted." }
+    ]
+  };
+
+  reports.unshift(newReport);
+  saveReports(reports);
+
+  document.getElementById("f-title").value = "";
+  document.getElementById("f-location").value = "";
+  document.getElementById("f-desc").value = "";
+
+  render();
+}
+
+function updateStatus(id, newStatus) {
+  const report = reports.find(r => r.id === id);
+  if (!report || report.status === newStatus) return;
+  report.status = newStatus;
+  report.history.push({
+    status: newStatus,
+    time: new Date().toISOString(),
+    note: "Status changed to " + STATUS_LABELS[newStatus] + "."
+  });
+  saveReports(reports);
+  render();
+}
+
+function toggleTimeline(id) {
+  const el = document.getElementById("timeline-" + id);
+  el.classList.toggle("open");
+}
+
+function formatTime(iso) {
+  const d = new Date(iso);
+  return d.toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+}
+
+function render() {
+  const list = document.getElementById("report-list");
+  const search = document.getElementById("search").value.toLowerCase();
+  const catFilter = document.getElementById("filter-category").value;
+  const statusFilter = document.getElementById("filter-status").value;
+
+  const filtered = reports.filter(r => {
+    const matchesSearch = !search ||
+      r.title.toLowerCase().includes(search) ||
+      r.description.toLowerCase().includes(search) ||
+      r.location.toLowerCase().includes(search);
+    const matchesCategory = !catFilter || r.category === catFilter;
+    const matchesStatus = !statusFilter || r.status === statusFilter;
+    return matchesSearch && matchesCategory && matchesStatus;
+  });
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="empty">No reports match your filters.</div>';
+    return;
+  }
+
+  list.innerHTML = filtered.map(r => `
+    <div class="report-card">
+      <div class="report-top">
+        <div>
+          <div class="report-title">${escapeHtml(r.title)}</div>
+          <div class="report-meta">${escapeHtml(r.category)} · ${escapeHtml(r.location) || "No location"} · Severity: ${escapeHtml(r.severity)}</div>
+        </div>
+        <span class="badge ${r.status}">${STATUS_LABELS[r.status]}</span>
+      </div>
+      <div class="report-desc">${escapeHtml(r.description) || "<em>No description provided.</em>"}</div>
+      <div class="status-row">
+        <label style="margin:0;">Update status:</label>
+        <select onchange="updateStatus('${r.id}', this.value)">
+          ${Object.keys(STATUS_LABELS).map(s =>
+            `<option value="${s}" ${s === r.status ? "selected" : ""}>${STATUS_LABELS[s]}</option>`
+          ).join("")}
+        </select>
+      </div>
+      <div class="timeline">
+        <span class="timeline-toggle" onclick="toggleTimeline('${r.id}')">View status history (${r.history.length})</span>
+        <div class="timeline-list" id="timeline-${r.id}">
+          ${r.history.slice().reverse().map(h => `
+            <div class="timeline-item">
+              <strong>${STATUS_LABELS[h.status]}</strong> — ${formatTime(h.time)}<br>${escapeHtml(h.note)}
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+
+function escapeHtml(str) {
+  if (!str) return "";
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+render();
+</script>
+
+</body>
+</html>
