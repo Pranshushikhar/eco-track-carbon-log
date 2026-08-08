@@ -34,6 +34,7 @@ Environmental Sustainability track (Algolympia 2026, Team Tech Rangers).
 - Persisted status with a visible history timeline per report
 - Category filtering and keyword search
 - Sample report seeded for demo purposes
+-- Severity filtering with reset, plus category and status breakdown summary
 
 ### Live Demo
 [Open Environment Report Tracker](https://pranshushikhar.github.io/eco-track-carbon-log/environment-report-tracker.html)
